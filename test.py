@@ -18,21 +18,6 @@ class HomeApp(webapp.RequestHandler):
     def get(self):
         session = get_current_session()
 
-        #public_tweets = tweepy.api.public_timeline()
-        #for tweet in public_tweets:
-        #    print tweet.text
-
-        #callback_url = 'http://localhost:8080/'
-        #auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET, 
-        #                           callback_url)
-
-        #try:
-        #    self.redirect(auth.get_authorization_url())
-        #except tweepy.TweepError, e:
-        #    print e
-        #    print 'error! failed to get request token'
-        #    return
-
         twitter = Twython(
             twitter_token = CONSUMER_KEY,
             twitter_secret = CONSUMER_SECRET,
@@ -40,6 +25,8 @@ class HomeApp(webapp.RequestHandler):
         )
 
         auth_props = twitter.get_authentication_tokens()
+        session['auth_props'] = auth_props
+
         self.redirect(auth_props['auth_url'])
 
         template_values = {
@@ -53,7 +40,20 @@ class HomeApp(webapp.RequestHandler):
 class CallbackApp(webapp.RequestHandler):
 
     def get(self):
+        session = get_current_session()
+        auth_props = session.get('auth_props')
 
+    	twitter = Twython(
+    		twitter_token = CONSUMER_KEY,
+    		twitter_secret = CONSUMER_SECRET,
+    		oauth_token = auth_props['oauth_token'],
+    		oauth_token_secret = auth_props['oauth_token_secret']
+    	)
+
+        authorized_tokens = twitter.get_authorized_tokens()
+        #for k,v in authorized_tokens.items():
+        #    print k, v
+        
         template_values = {
             'temp': 'callback', #auth.request_token.key,
         }
