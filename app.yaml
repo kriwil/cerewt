@@ -1,0 +1,21 @@
+application: cerewet
+version: 1
+runtime: python
+api_version: 1
+
+builtins:
+- datastore_admin: on
+- remote_api: on
+
+handlers:
+- url: /css
+  static_dir: css
+
+- url: /js
+  static_dir: js
+
+- url: /img
+  static_dir: img
+
+- url: /.*
+  script: test.py
