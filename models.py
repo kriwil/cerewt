@@ -18,3 +18,10 @@ class User(db.Model):
     deleted = db.BooleanProperty(required=True, default=False)
 
 
+class UserStatistic(db.Model):
+    #user = db.ReferenceProperty(User)
+    twitter_id = db.IntegerProperty(required=True)
+    statistics = db.TextProperty()
+
+    created = db.DateTimeProperty(auto_now_add=True)
+    updated = db.DateTimeProperty(auto_now=True)

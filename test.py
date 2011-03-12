@@ -11,7 +11,9 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from gaesessions import get_current_session
 from twython import Twython
 
-from models import User
+import simplejson
+
+from models import User, UserStatistic
 from settings import *
 
 
@@ -99,7 +101,9 @@ class TimelineApp(webapp.RequestHandler):
     		oauth_token_secret = authorized_tokens['oauth_token_secret']
     	)
 
-        temp = dict()
+        twitter_id = authorized_tokens['user_id']
+
+        stat = dict()
         page = 0
         total = 0
         while True:
@@ -117,15 +121,28 @@ class TimelineApp(webapp.RequestHandler):
                 total = total + len(tweets)
 
             for tweet in tweets:
-                user = tweet['user']['id']
-                if not temp.has_key(user):
-                    temp[user] = [tweet['user']['screen_name'], 0]
+                user = tweet['user']['screen_name']
+                if not stat.has_key(user):
+                    stat[user] = 0
 
-                count = temp[user][1]
-                temp[user][1] = count + 1
+                stat[user] = stat[user] + 1
 
-        for k, v in temp.items():
-            print k, v[0], v[1]
+        statistic = UserStatistic.get_by_key_name(twitter_id)
+        if statistic is None:
+            statistic = UserStatistic(
+                                      key_name=twitter_id,
+                                      twitter_id=long(twitter_id),
+                                     )
+
+        statistic.statistics = simplejson.dumps(stat)
+        statistic.put()
+
+        sorted_stat = sorted(stat, key=stat.get)
+        sorted_stat.reverse()
+        for item in sorted_stat:
+            print item, stat[item]
+        #for k, v in stat.items():
+        #    print k, v
 
         print twitter.getRateLimitStatus()['remaining_hits']
         print total
