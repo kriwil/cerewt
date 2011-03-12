@@ -8,7 +8,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import login_required
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-#import tweepy
+from gaesessions import get_current_session
 from twython import Twython
 from settings import *
 
@@ -16,6 +16,7 @@ from settings import *
 class HomeApp(webapp.RequestHandler):
 
     def get(self):
+        session = get_current_session()
 
         #public_tweets = tweepy.api.public_timeline()
         #for tweet in public_tweets:
@@ -39,9 +40,7 @@ class HomeApp(webapp.RequestHandler):
         )
 
         auth_props = twitter.get_authentication_tokens()
-        #self.redirect(auth_props['auth_url'])
-        print '-----'
-        print auth_props
+        self.redirect(auth_props['auth_url'])
 
         template_values = {
             'temp': 'home', #auth.request_token.key,
