@@ -10,6 +10,8 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from gaesessions import get_current_session
 from twython import Twython
+
+from models import User
 from settings import *
 
 
@@ -51,9 +53,20 @@ class CallbackApp(webapp.RequestHandler):
     	)
 
         authorized_tokens = twitter.get_authorized_tokens()
+        twitter_id = authorized_tokens['user_id']
+        username = authorized_tokens['screen_name']
+        oauth_token = authorized_tokens['oauth_token']
+        oauth_token_secret = authorized_tokens['oauth_token_secret']
+
         #for k,v in authorized_tokens.items():
         #    print k, v
         
+        user = User.get_or_insert(twitter_id, 
+                                  twitter_id=long(twitter_id),
+                                  username=username,
+                                  oauth_token=oauth_token,
+                                  oauth_token_secret=oauth_token_secret)
+
         template_values = {
             'temp': 'callback', #auth.request_token.key,
         }
