@@ -16,3 +16,5 @@ class User(db.Model):
     updated = db.DateTimeProperty(auto_now=True)
 
     deleted = db.BooleanProperty(required=True, default=False)
+
+
