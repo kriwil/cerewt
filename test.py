@@ -20,6 +20,17 @@ from settings import *
 class HomeApp(webapp.RequestHandler):
 
     def get(self):
+        template_values = {
+            'temp': 'home',
+        }
+
+        path = os.path.join(TEMPLATE, 'base.html')
+        self.response.out.write(template.render(path, template_values))
+
+
+class ConnectApp(webapp.RequestHandler):
+
+    def get(self):
         session = get_current_session()
 
         twitter = Twython(

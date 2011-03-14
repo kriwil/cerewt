@@ -1,7 +1,51 @@
-{% comment %}
-{% for tweet in tweets %}
-<p>{{ tweet.text }}</p>
-{% endfor %}
-{% endcomment %}
+<!DOCTYPE html>
+<html>
+<head>
+<!--
+    Built on top google app engine (python), because it's free, hurray!
+    Well of course it has some limitation (not even a unique constraint in
+    the model? arrggh), and only for limited resources (then you have to
+    pay for more). So, please don't over-use this please, pretty please ...
+    Anyway, enjoy.
+-->
+<title>cerewet</title>
+<link href='/media/css/reset.css' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='/media/css/main.less' rel='stylesheet/less' type='text/css'>
+<script type='text/javascript' src='/media/js/less-1.0.41.min.js'></script>
+</head>
+<body>
+<div class='container'>
 
-{{ temp }}
+<h1><a href='#'>Cerewet</a></h1>
+
+<div class='front'>
+    <h2>Eh? what's Cerewet?</h2>
+    <p><a href='#'><em>Cerewet</em></a>
+    (it's Indonesian for <em>chatty</em>) is a simple
+    webapp for finding who's the most chatty person in your timeline
+    (in certain period of time &ndash; well, in your at-most-800 latest
+    home timeline).</p>
+    <p>Home timeline is the timeline you see when you log in to twitter,
+    tweets from your friends, that is.</p>
+    <p>To use this app, you have to sign-in using your twitter account.
+    Don't worry, I only ask for read permission, so it won't be any
+    <strike>funny</strike> stupid auto-post tweet or changing your account
+    data or other stupid stuffs.</p>
+    <p><a href='#'><img src='/media/img/sign-in-with-twitter-l.png'></a></p>
+</div>
+
+<div class='bottom'>
+    <h2>More &hellip;</h2>
+    <p>
+        This is a <em>let's-do-some-fun</em> project by
+        <a href='http://twitter.com/kriwil'>@kriwil</a>.
+        I if you have some ideas about this, or about anything,
+        just contact me via twitter or email. My email is
+        <em>my-twitter-username</em> at gmail dot com.
+    </p>
+</div>
+
+</div>
+</body>
+</html>
