@@ -1,6 +1,8 @@
 from google.appengine.dist import use_library
 use_library('django', '1.2')
 
+from datetime import datetime, timedelta
+
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -114,30 +116,6 @@ class TimelineApp(webapp.RequestHandler):
 
         twitter_id = authorized_tokens['user_id']
 
-        stat = dict()
-        page = 0
-        total = 0
-        while True:
-            tweets = twitter.getFriendsTimeline(
-                                             count=200,
-                                             include_entities=1,
-                                             page=page,
-                                             #trim_user=1,
-                                            )
-
-            if len(tweets) == 0:
-                break
-            else:
-                page = page + 1
-                total = total + len(tweets)
-
-            for tweet in tweets:
-                user = tweet['user']['screen_name']
-                if not stat.has_key(user):
-                    stat[user] = 0
-
-                stat[user] = stat[user] + 1
-
         statistic = UserStatistic.get_by_key_name(twitter_id)
         if statistic is None:
             statistic = UserStatistic(
@@ -145,8 +123,40 @@ class TimelineApp(webapp.RequestHandler):
                                       twitter_id=long(twitter_id),
                                      )
 
-        statistic.statistics = simplejson.dumps(stat)
-        statistic.put()
+        # Newly created
+        stat = dict()
+        total = 0
+
+        if statistic.created == statistic.updated \
+            or statistic.updated < datetime.now() + timedelta(hours=1):
+            page = 0
+            while True:
+                tweets = twitter.getFriendsTimeline(
+                                                 count=200,
+                                                 include_entities=1,
+                                                 page=page,
+                                                 #trim_user=1,
+                                                )
+
+                if len(tweets) == 0:
+                    break
+                else:
+                    page = page + 1
+                    total = total + len(tweets)
+
+                for tweet in tweets:
+                    user = tweet['user']['screen_name']
+                    if not stat.has_key(user):
+                        stat[user] = 0
+
+                    stat[user] = stat[user] + 1
+
+            statistic.statistics = simplejson.dumps(stat)
+            statistic.put()
+
+        else:
+            print 'from db'
+            stat = simplejson.loads(statistic.statistics)
 
         sorted_stat = sorted(stat, key=stat.get)
         sorted_stat.reverse()
@@ -172,6 +182,7 @@ class TimelineApp(webapp.RequestHandler):
             'sorted_dict': sorted_dict,
             'total': total,
             'rate_limit': rate_limit,
+            'last_check': statistic.updated,
         }
 
         path = os.path.join(TEMPLATE, 'timeline.html')
