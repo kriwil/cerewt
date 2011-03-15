@@ -10,7 +10,8 @@
 -->
 <title>cerewet</title>
 <link href='/media/css/reset.css' rel='stylesheet' type='text/css'>
-<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' 
+    type='text/css'>
 <link href='/media/css/main.less' rel='stylesheet/less' type='text/css'>
 <script type='text/javascript' src='/media/js/less-1.0.41.min.js'></script>
 </head>
@@ -18,6 +19,8 @@
 <div class='container'>
 
 <h1><a href='#'>Cerewet</a></h1>
+
+{% block 'content' %}
 
 <div class='front'>
     <h2>Eh? what's Cerewet?</h2>
@@ -32,8 +35,12 @@
     Don't worry, I only ask for read permission, so it won't be any
     <strike>funny</strike> stupid auto-post tweet or changing your account
     data or other stupid stuffs.</p>
-    <p><a href='#'><img src='/media/img/sign-in-with-twitter-l.png'></a></p>
+    <p>
+        <a href='/connect'><img src='/media/img/sign-in-with-twitter-l.png'></a>
+    </p>
 </div>
+
+{% endblock %}
 
 <div class='bottom'>
     <h2>More &hellip;</h2>

@@ -103,7 +103,7 @@ class TimelineApp(webapp.RequestHandler):
         session = get_current_session()
         authorized_tokens = session.get('authorized_tokens', None)
         if authorized_tokens is None:
-            self.redirect('/')
+            self.redirect('/connect')
 
     	twitter = Twython(
     		twitter_token = CONSUMER_KEY,
@@ -150,18 +150,38 @@ class TimelineApp(webapp.RequestHandler):
 
         sorted_stat = sorted(stat, key=stat.get)
         sorted_stat.reverse()
-        for item in sorted_stat:
-            print item, stat[item]
-        #for k, v in stat.items():
-        #    print k, v
 
-        print twitter.getRateLimitStatus()['remaining_hits']
-        print total
+        sorted_dict = []
+        for item in sorted_stat:
+            if stat[item] > 1:
+                sorted_dict.append(dict(
+                    user = item,
+                    count = stat[item],
+                ))
+
+        #for item in sorted_stat:
+        #    print item, stat[item]
+        ##for k, v in stat.items():
+        ##    print k, v
+
+        #print twitter.getRateLimitStatus()['remaining_hits']
+        #print total
+        rate_limit = twitter.getRateLimitStatus()['remaining_hits']
+
+        template_values = {
+            'sorted_dict': sorted_dict,
+            'total': total,
+            'rate_limit': rate_limit,
+        }
+
+        path = os.path.join(TEMPLATE, 'timeline.html')
+        self.response.out.write(template.render(path, template_values))
 
 
 application = webapp.WSGIApplication(
                 [
                   ('/', HomeApp),
+                  ('/connect', ConnectApp),
                   ('/callback', CallbackApp),
                   ('/timeline', TimelineApp),
                 ],

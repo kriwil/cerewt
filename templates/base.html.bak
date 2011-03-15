@@ -1,7 +1,0 @@
-{% comment %}
-{% for tweet in tweets %}
-<p>{{ tweet.text }}</p>
-{% endfor %}
-{% endcomment %}
-
-{{ temp }}

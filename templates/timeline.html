@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+
+<div class='content'>
+    <h2>Result for <a href='#'>@kriwil</a></h2>
+    <ul class='user_data'>
+        <li>Last check: Mar 13 &ndash; 9:31 AM</li>
+        <li>API Calls left: {{ rate_limit }}</li>
+    </ul>
+    
+    <p class='stat_meta'>
+        From latest <em>{{ total }}</em> tweets in your timeline,
+        these are your most chatty friends.
+    </p>
+    <ul class='stat_data'>
+        {% for item in sorted_dict %}
+        <li><a href='http://twitter.com/{{ item.user }}'>{{ item.user }}</a> 
+            &mdash; {{ item.count }} tweets</a></li>
+        {% endfor %}
+    </ul>
+    <div class='tweet_button'>
+        <a href="http://twitter.com/share" class="twitter-share-button" 
+        data-count="none">Tweet</a><script type="text/javascript" 
+        src="http://platform.twitter.com/widgets.js"></script>
+    </div>
+</div>
+
+{% endblock %}
