@@ -128,7 +128,8 @@ class TimelineApp(webapp.RequestHandler):
         total = 0
 
         if statistic.created == statistic.updated \
-            or statistic.updated < datetime.now() + timedelta(hours=1):
+            or statistic.updated + timedelta(hours=1) < datetime.now():
+
             page = 0
             while True:
                 tweets = twitter.getFriendsTimeline(
