@@ -194,6 +194,7 @@ application = webapp.WSGIApplication(
                   ('/connect', ConnectApp),
                   ('/callback', CallbackApp),
                   ('/timeline', TimelineApp),
+                  #(r'/user/(.*)', UserApp),
                 ],
                 debug=DEBUG
               )
