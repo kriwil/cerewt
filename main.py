@@ -1,20 +1,5 @@
-#!/bin/env python
+from datetime import datetime, timedelta
 
-from google.appengine.dist import use_library
-use_library('django', '1.2')
-
-import cgi
-import csv
-import hashlib
-import logging
-import math
-import os
-import pickle
-import re
-
-# from django.utils import simplejson as json
-
-# from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -22,93 +7,199 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import login_required
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from models import *
+from gaesessions import get_current_session
+from twython import Twython
+
+import simplejson
+
+from models import User, UserStatistic
 from settings import *
 
+
 class HomeApp(webapp.RequestHandler):
-	def get(self):
 
-		limit = 10
-		page = self.request.get('page') or 1
-		page = int(page)
-		offset = (page - 0) * limit
+    def get(self):
+        template_values = {
+            'temp': 'home',
+        }
 
-		place = Place.all()
-		total_place = place.count()
-		places = place.fetch(limit=limit, offset=offset)
-		#max_row = int(float(len(places)) / 2)
+        path = os.path.join(TEMPLATE, 'base.html')
+        self.response.out.write(template.render(path, template_values))
 
-		total_page = int(math.ceil(float(total_place) / limit))
 
-		template_values = {
-			'places': places,
-			'total_place': total_place,
-			'current_page': page,
-			'prev_page': page - 1,
-			'next_page': page + 1,
-			'total_page': total_page,
-			'loop_range': range(1, total_page),
-			'current_url': '/?'
-		}
+class ConnectApp(webapp.RequestHandler):
 
-		path = os.path.join(TEMPLATE, 'base.html')
-		self.response.out.write(template.render(path, template_values))
+    def get(self):
+        session = get_current_session()
 
-class PlaceDetailApp(webapp.RequestHandler):
-	def get(self, *args):
-		place = Place.get_by_id(int(args[0]))
-		if not args[1] or args[1] != place.url_name:
-			self.redirect("/place/%s/%s" % (place.key().id(), place.url_name))
+        twitter = Twython(
+            twitter_token = CONSUMER_KEY,
+            twitter_secret = CONSUMER_SECRET,
+            callback_url = 'http://localhost:8080/callback',
+        )
 
-		template_values = {
-			'place': place,
-		}
+        auth_props = twitter.get_authentication_tokens()
+        session['auth_props'] = auth_props
 
-		path = os.path.join(TEMPLATE, 'place_detail.html')
-		self.response.out.write(template.render(path, template_values))
+        self.redirect(auth_props['auth_url'])
 
-class SearchApp(webapp.RequestHandler):
-	def get(self):
-		keyword = self.request.get('keyword')
+        template_values = {
+            'temp': 'home', #auth.request_token.key,
+        }
 
-		limit = 10
-		page = self.request.get('page') or 1
-		page = int(page)
-		offset = (page - 1) * limit
+        path = os.path.join(TEMPLATE, 'base.html')
+        self.response.out.write(template.render(path, template_values))
 
-		indexes = db.GqlQuery("SELECT __key__ FROM PlaceIndex WHERE keyword = :keyword LIMIT %s, %s" % (offset, limit), keyword=keyword)
-		keys = [k.parent() for k in indexes]
-		places = db.get(keys)
 
-		total_result = indexes.count()
-		total_page = int(math.ceil(float(total_result) / limit))
+class CallbackApp(webapp.RequestHandler):
 
-		template_values = {
-			'places': places,
-			'total_place': total_result,
-			'current_page': page,
-			'prev_page': page - 1,
-			'next_page': page + 1,
-			'total_page': total_page,
-			'loop_range': range(1, total_page),
-			'keyword': keyword,
-			'current_url': '/search?keyword=%s&' % keyword
-		}
+    def get(self):
+        session = get_current_session()
+        auth_props = session.get('auth_props')
 
-		path = os.path.join(TEMPLATE, 'search.html')
-		self.response.out.write(template.render(path, template_values))
+    	twitter = Twython(
+    		twitter_token = CONSUMER_KEY,
+    		twitter_secret = CONSUMER_SECRET,
+    		oauth_token = auth_props['oauth_token'],
+    		oauth_token_secret = auth_props['oauth_token_secret']
+    	)
+
+        # terminate all sessions
+        session.terminate()
+
+        authorized_tokens = twitter.get_authorized_tokens()
+        session['authorized_tokens'] = authorized_tokens
+
+        twitter_id = authorized_tokens['user_id']
+        username = authorized_tokens['screen_name']
+        oauth_token = authorized_tokens['oauth_token']
+        oauth_token_secret = authorized_tokens['oauth_token_secret']
+
+        #for k,v in authorized_tokens.items():
+        #    print k, v
+        
+        user = User.get_or_insert(twitter_id, twitter_id=long(twitter_id))
+
+        # always keep the latest
+        user.username = username
+        user.oauth_token = oauth_token
+        user.oauth_token_secret = oauth_token_secret
+        user.put()
+
+        template_values = {
+            'temp': 'callback', #auth.request_token.key,
+        }
+
+        path = os.path.join(TEMPLATE, 'base.html')
+        self.response.out.write(template.render(path, template_values))
+
+        self.redirect('/timeline')
+
+
+class TimelineApp(webapp.RequestHandler):
+
+    def get(self):
+        session = get_current_session()
+        authorized_tokens = session.get('authorized_tokens', None)
+        if authorized_tokens is None:
+            self.redirect('/connect')
+
+    	twitter = Twython(
+    		twitter_token = CONSUMER_KEY,
+    		twitter_secret = CONSUMER_SECRET,
+    		oauth_token = authorized_tokens['oauth_token'],
+    		oauth_token_secret = authorized_tokens['oauth_token_secret']
+    	)
+
+        twitter_id = authorized_tokens['user_id']
+        rate_limit = 0
+
+        statistic = UserStatistic.get_by_key_name(twitter_id)
+        if statistic is None:
+            statistic = UserStatistic(
+                                      key_name=twitter_id,
+                                      twitter_id=long(twitter_id),
+                                     )
+            statistic.put()
+
+        # Newly created
+        stat = dict()
+        total = 0
+
+        if statistic.created == statistic.updated \
+            or not statistic.statistics \
+            or statistic.updated + timedelta(hours=1) < datetime.now():
+
+            from_db = False
+            page = 0
+            while True:
+                tweets = twitter.getFriendsTimeline(
+                                                 count=200,
+                                                 include_entities=1,
+                                                 page=page,
+                                                 #trim_user=1,
+                                                )
+
+                if len(tweets) == 0:
+                    break
+                else:
+                    page = page + 1
+                    total = total + len(tweets)
+
+                for tweet in tweets:
+                    user = tweet['user']['screen_name']
+                    if not stat.has_key(user):
+                        stat[user] = 0
+
+                    stat[user] = stat[user] + 1
+
+            sorted_stat = sorted(stat, key=stat.get)
+            sorted_stat.reverse()
+
+            sorted_dict = []
+            for item in sorted_stat:
+                if stat[item] > 1:
+                    sorted_dict.append(dict(
+                        user = item,
+                        count = stat[item],
+                    ))
+
+
+            statistic.statistics = simplejson.dumps(sorted_dict)
+            statistic.put()
+            rate_limit = twitter.getRateLimitStatus()['remaining_hits']
+
+        else:
+            from_db = True
+            sorted_dict = simplejson.loads(statistic.statistics)
+
+        user = User.get_by_key_name(twitter_id)
+
+        template_values = {
+            'user': user,
+            'sorted_dict': sorted_dict,
+            'total': total,
+            'rate_limit': rate_limit,
+            'last_check': statistic.updated + timedelta(hours=7),
+            'from_db': from_db,
+        }
+
+        path = os.path.join(TEMPLATE, 'timeline.html')
+        self.response.out.write(template.render(path, template_values))
+
 
 application = webapp.WSGIApplication(
-	            [
-	              ('/', HomeApp),
-	              (r'/place/([0-9]+)/([A-Za-z0-9-]*)', PlaceDetailApp),
-	              ('/search', SearchApp),
-	            ],
-	            debug=DEBUG
-	          )
+                [
+                  ('/', HomeApp),
+                  ('/connect', ConnectApp),
+                  ('/callback', CallbackApp),
+                  ('/timeline', TimelineApp),
+                ],
+                debug=DEBUG
+              )
 
 def main():
-	run_wsgi_app(application)
+    run_wsgi_app(application)
 
 if __name__ == "__main__":
-	main()
+    main()

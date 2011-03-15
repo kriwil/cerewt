@@ -20,7 +20,7 @@ handlers:
 #  script: $PYTHON_LIB/google/appengine/ext/appstats/ui.py
 
 - url: /.*
-  script: test.py
+  script: main.py
 
 admin_console:
   pages:
