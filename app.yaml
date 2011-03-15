@@ -15,5 +15,13 @@ handlers:
 - url: /media
   static_dir: media
 
+- url: /stats.*
+  script: $PYTHON_LIB/google/appengine/ext/appstats/ui.py
+
 - url: /.*
   script: test.py
+
+admin_console:
+  pages:
+  - name: Appstats
+    url: /stats

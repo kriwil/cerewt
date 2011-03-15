@@ -1,3 +1,6 @@
+from google.appengine.dist import use_library
+use_library('django', '1.2')
+
 import os
 from gaesessions import SessionMiddleware
 
@@ -5,5 +8,7 @@ COOKIE_KEY = "\x9f\x18\xef\x8e\x05\x14,M\x8f\xf2U\xb5\xe7\x11\xc0\x84\xc7\xecQY3
 
 
 def webapp_add_wsgi_middleware(app):
+    from google.appengine.ext.appstats import recording
+    app = recording.appstats_wsgi_middleware(app)
     app = SessionMiddleware(app, cookie_key=COOKIE_KEY)
     return app
