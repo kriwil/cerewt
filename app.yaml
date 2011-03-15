@@ -4,6 +4,7 @@ runtime: python
 api_version: 1
 
 builtins:
+- appstats: on
 - datastore_admin: on
 - remote_api: on
 
@@ -15,8 +16,8 @@ handlers:
 - url: /media
   static_dir: media
 
-- url: /stats.*
-  script: $PYTHON_LIB/google/appengine/ext/appstats/ui.py
+#- url: /stats.*
+#  script: $PYTHON_LIB/google/appengine/ext/appstats/ui.py
 
 - url: /.*
   script: test.py
@@ -24,4 +25,4 @@ handlers:
 admin_console:
   pages:
   - name: Appstats
-    url: /stats
+    url: /_ah/stats
