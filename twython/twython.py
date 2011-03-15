@@ -11,6 +11,7 @@
 __author__ = "Ryan McGrath <ryan@venodesigns.net>"
 __version__ = "1.4.1"
 
+import cgi
 import urllib
 import urllib2
 import urlparse
@@ -206,7 +207,7 @@ class Twython(object):
 		if resp['status'] != '200':
 			raise AuthError("Seems something couldn't be verified with your OAuth junk. Error: %s, Message: %s" % (resp['status'], content))
 		
-		request_tokens = dict(urlparse.parse_qsl(content))
+		request_tokens = dict(cgi.parse_qsl(content))
 		
 		oauth_callback_confirmed = request_tokens.get('oauth_callback_confirmed')=='true'
 		
@@ -234,7 +235,7 @@ class Twython(object):
 			Returns authorized tokens after they go through the auth_url phase.
 		"""
 		resp, content = self.client.request(self.access_token_url, "GET")
-		return dict(urlparse.parse_qsl(content))
+		return dict(cgi.parse_qsl(content))
 
 	# ------------------------------------------------------------------------------------------------------------------------
 	# The following methods are all different in some manner or require special attention with regards to the Twitter API.

@@ -11,5 +11,9 @@ handlers:
 - url: /media
   static_dir: media
 
+- url: /favicon.\ico
+  static_files: media/img/favicon.ico
+  upload: media/img/favicon.ico
+
 - url: /.*
   script: test.py

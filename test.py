@@ -117,7 +117,6 @@ class TimelineApp(webapp.RequestHandler):
         twitter_id = authorized_tokens['user_id']
         rate_limit = 0
 
-        user = User.get_by_key_name(twitter_id)
         statistic = UserStatistic.get_by_key_name(twitter_id)
         if statistic is None:
             statistic = UserStatistic(
@@ -177,6 +176,7 @@ class TimelineApp(webapp.RequestHandler):
             from_db = True
             sorted_dict = simplejson.loads(statistic.statistics)
 
+        user = User.get_by_key_name(twitter_id)
 
         template_values = {
             'user': user,
