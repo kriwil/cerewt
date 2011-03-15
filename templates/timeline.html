@@ -3,16 +3,26 @@
 {% block 'content' %}
 
 <div class='content'>
-    <h2>Result for <a href='#'>@kriwil</a></h2>
+    <h2>Result for
+        <a href='http://twitter.com/{{ user.username }}'>
+            @{{ user.username }}</a></h2>
     <ul class='user_data'>
-        <li>Last check: {{ last_check }}{# Mar 13 &ndash; 9:31 AM #}</li>
+        <li>Last check: (GMT+7) {{ last_check }}</li>
+        {% if from_db %}
+        <li>Sorry, we're not updating your data. Your last update is
+            less than 1 hour ago.</li>
+        {% else %}
         <li>API Calls left: {{ rate_limit }}</li>
+        {% endif %}
     </ul>
-    
+   
+    {% if not from_db %} 
     <p class='stat_meta'>
         From latest <em>{{ total }}</em> tweets in your timeline,
         these are your most chatty friends.
     </p>
+    {% endif %}
+
     <ul class='stat_data'>
         {% for item in sorted_dict %}
         <li><a href='http://twitter.com/{{ item.user }}'>{{ item.user }}</a> 

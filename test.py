@@ -115,21 +115,26 @@ class TimelineApp(webapp.RequestHandler):
     	)
 
         twitter_id = authorized_tokens['user_id']
+        rate_limit = 0
 
+        user = User.get_by_key_name(twitter_id)
         statistic = UserStatistic.get_by_key_name(twitter_id)
         if statistic is None:
             statistic = UserStatistic(
                                       key_name=twitter_id,
                                       twitter_id=long(twitter_id),
                                      )
+            statistic.put()
 
         # Newly created
         stat = dict()
         total = 0
 
         if statistic.created == statistic.updated \
+            or not statistic.statistics \
             or statistic.updated + timedelta(hours=1) < datetime.now():
 
+            from_db = False
             page = 0
             while True:
                 tweets = twitter.getFriendsTimeline(
@@ -152,38 +157,34 @@ class TimelineApp(webapp.RequestHandler):
 
                     stat[user] = stat[user] + 1
 
-            statistic.statistics = simplejson.dumps(stat)
+            sorted_stat = sorted(stat, key=stat.get)
+            sorted_stat.reverse()
+
+            sorted_dict = []
+            for item in sorted_stat:
+                if stat[item] > 1:
+                    sorted_dict.append(dict(
+                        user = item,
+                        count = stat[item],
+                    ))
+
+
+            statistic.statistics = simplejson.dumps(sorted_dict)
             statistic.put()
+            rate_limit = twitter.getRateLimitStatus()['remaining_hits']
 
         else:
-            print 'from db'
-            stat = simplejson.loads(statistic.statistics)
+            from_db = True
+            sorted_dict = simplejson.loads(statistic.statistics)
 
-        sorted_stat = sorted(stat, key=stat.get)
-        sorted_stat.reverse()
-
-        sorted_dict = []
-        for item in sorted_stat:
-            if stat[item] > 1:
-                sorted_dict.append(dict(
-                    user = item,
-                    count = stat[item],
-                ))
-
-        #for item in sorted_stat:
-        #    print item, stat[item]
-        ##for k, v in stat.items():
-        ##    print k, v
-
-        #print twitter.getRateLimitStatus()['remaining_hits']
-        #print total
-        rate_limit = twitter.getRateLimitStatus()['remaining_hits']
 
         template_values = {
+            'user': user,
             'sorted_dict': sorted_dict,
             'total': total,
             'rate_limit': rate_limit,
-            'last_check': statistic.updated,
+            'last_check': statistic.updated + timedelta(hours=7),
+            'from_db': from_db,
         }
 
         path = os.path.join(TEMPLATE, 'timeline.html')
