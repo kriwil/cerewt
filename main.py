@@ -188,13 +188,19 @@ class TimelineApp(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
 
 
+class TimelineApp(webapp.RequestHandler):
+
+    def get(self, username):
+        pass
+
+
 application = webapp.WSGIApplication(
                 [
                   ('/', HomeApp),
                   ('/connect', ConnectApp),
                   ('/callback', CallbackApp),
                   ('/timeline', TimelineApp),
-                  #(r'/user/(.*)', UserApp),
+                  (r'/user/(.*)', UserApp),
                 ],
                 debug=DEBUG
               )
