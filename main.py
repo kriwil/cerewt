@@ -188,10 +188,10 @@ class TimelineApp(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
 
 
-class TimelineApp(webapp.RequestHandler):
-
-    def get(self, username):
-        pass
+#class TimelineApp(webapp.RequestHandler):
+#
+#    def get(self, username):
+#        pass
 
 
 application = webapp.WSGIApplication(
