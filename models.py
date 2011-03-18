@@ -21,6 +21,8 @@ class User(db.Model):
 class UserStatistic(db.Model):
     #user = db.ReferenceProperty(User)
     twitter_id = db.IntegerProperty(required=True)
+    start_time = db.DateTimeProperty()
+    end_time = db.DateTimeProperty()
     statistics = db.TextProperty()
 
     created = db.DateTimeProperty(auto_now_add=True)

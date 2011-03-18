@@ -132,6 +132,8 @@ class TimelineApp(webapp.RequestHandler):
 
             from_db = False
             page = 0
+            start_time = None
+            end_time = None
             while True:
                 tweets = twitter.getFriendsTimeline(
                                                  count=200,
@@ -145,6 +147,17 @@ class TimelineApp(webapp.RequestHandler):
                 else:
                     page = page + 1
                     total = total + len(tweets)
+
+                    if start_time is None:
+                        start_time = datetime \
+                                         .strptime(tweets[0]['created_at'],
+                                             "%a %b %d %H:%M:%S +0000 %Y")
+
+
+                    last_tweet = tweets[len(tweets) - 1]
+                    end_time = datetime \
+                                   .strptime(last_tweet['created_at'],
+                                         "%a %b %d %H:%M:%S +0000 %Y")
 
                 for tweet in tweets:
                     user = tweet['user']['screen_name']
@@ -165,6 +178,8 @@ class TimelineApp(webapp.RequestHandler):
                     ))
 
 
+            statistic.start_time = start_time
+            statistic.end_time = end_time 
             statistic.statistics = simplejson.dumps(sorted_dict)
             statistic.put()
             rate_limit = twitter.getRateLimitStatus()['remaining_hits']
