@@ -188,10 +188,30 @@ class TimelineApp(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
 
 
-#class TimelineApp(webapp.RequestHandler):
-#
-#    def get(self, username):
-#        pass
+class UserApp(webapp.RequestHandler):
+
+    def get(self, username):
+
+        user = User.gql("WHERE username = :1", username)
+        if user.count() == 0:
+            self.redirect('/')
+            return
+        else:
+            user = user[0]
+
+        statistic = UserStatistic.get_by_key_name(user.key().name())
+        sorted_dict = simplejson.loads(statistic.statistics)
+
+        template_values = {
+            'user': user,
+            'sorted_dict': sorted_dict,
+            'last_check': statistic.updated + timedelta(hours=7),
+            'from_db': True,
+            'user_page': True,
+        }
+
+        path = os.path.join(TEMPLATE, 'timeline.html')
+        self.response.out.write(template.render(path, template_values))
 
 
 application = webapp.WSGIApplication(
@@ -200,7 +220,7 @@ application = webapp.WSGIApplication(
                   ('/connect', ConnectApp),
                   ('/callback', CallbackApp),
                   ('/timeline', TimelineApp),
-                  #(r'/user/(.*)', UserApp),
+                  (r'/user/(.*)', UserApp),
                 ],
                 debug=DEBUG
               )
