@@ -24,6 +24,7 @@ class UserStatistic(db.Model):
     start_time = db.DateTimeProperty()
     end_time = db.DateTimeProperty()
     statistics = db.TextProperty()
+    private = db.BooleanProperty(default=False)
 
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)
