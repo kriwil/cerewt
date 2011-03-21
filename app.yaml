@@ -19,6 +19,10 @@ handlers:
 #- url: /stats.*
 #  script: $PYTHON_LIB/google/appengine/ext/appstats/ui.py
 
+- url: /fetch/.*
+  script: main.py
+  login: admin
+
 - url: /.*
   script: main.py
 

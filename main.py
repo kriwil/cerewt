@@ -112,6 +112,7 @@ class TimelineApp(webapp.RequestHandler):
         )
 
         twitter_id = authorized_tokens['user_id']
+        username = authorized_tokens['screen_name']
         rate_limit = 0
 
         statistic = UserStatistic.get_by_key_name(twitter_id)
@@ -132,9 +133,14 @@ class TimelineApp(webapp.RequestHandler):
 
             task_url = '/fetch/%s' % twitter_id
             try:
-                taskqueue.add(url = task_url, name = twitter_id)
+                taskqueue.add(url=task_url,
+                              name=twitter_id,
+                              method='GET')
             except:
                 pass
+
+
+        self.redirect('/user/%s' % username)
 
             #rate_limit = twitter.getRateLimitStatus()['remaining_hits']
 
