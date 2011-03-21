@@ -1,5 +1,8 @@
+# vim: set expandtab
+
 from datetime import datetime, timedelta
 
+from google.appengine.api import taskqueue 
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -57,12 +60,12 @@ class CallbackApp(webapp.RequestHandler):
         session = get_current_session()
         auth_props = session.get('auth_props')
 
-    	twitter = Twython(
-    		twitter_token = CONSUMER_KEY,
-    		twitter_secret = CONSUMER_SECRET,
-    		oauth_token = auth_props['oauth_token'],
-    		oauth_token_secret = auth_props['oauth_token_secret']
-    	)
+        twitter = Twython(
+            twitter_token = CONSUMER_KEY,
+            twitter_secret = CONSUMER_SECRET,
+            oauth_token = auth_props['oauth_token'],
+            oauth_token_secret = auth_props['oauth_token_secret']
+        )
 
         # terminate all sessions
         session.terminate()
@@ -75,9 +78,6 @@ class CallbackApp(webapp.RequestHandler):
         oauth_token = authorized_tokens['oauth_token']
         oauth_token_secret = authorized_tokens['oauth_token_secret']
 
-        #for k,v in authorized_tokens.items():
-        #    print k, v
-        
         user = User.get_or_insert(twitter_id, twitter_id=long(twitter_id))
 
         # always keep the latest
@@ -104,12 +104,12 @@ class TimelineApp(webapp.RequestHandler):
         if authorized_tokens is None:
             self.redirect('/connect')
 
-    	twitter = Twython(
-    		twitter_token = CONSUMER_KEY,
-    		twitter_secret = CONSUMER_SECRET,
-    		oauth_token = authorized_tokens['oauth_token'],
-    		oauth_token_secret = authorized_tokens['oauth_token_secret']
-    	)
+        twitter = Twython(
+            twitter_token = CONSUMER_KEY,
+            twitter_secret = CONSUMER_SECRET,
+            oauth_token = authorized_tokens['oauth_token'],
+            oauth_token_secret = authorized_tokens['oauth_token_secret']
+        )
 
         twitter_id = authorized_tokens['user_id']
         rate_limit = 0
@@ -130,81 +130,113 @@ class TimelineApp(webapp.RequestHandler):
             or not statistic.statistics \
             or statistic.updated + timedelta(hours=1) < datetime.now():
 
-            from_db = False
-            page = 0
-            start_time = None
-            end_time = None
-            while True:
-                tweets = twitter.getFriendsTimeline(
-                                                 count=200,
-                                                 include_entities=1,
-                                                 page=page,
-                                                 #trim_user=1,
-                                                )
+            task_url = '/fetch/%s' % twitter_id
+            try:
+                taskqueue.add(url = task_url, name = twitter_id)
+            except:
+                pass
 
-                if len(tweets) == 0:
-                    break
-                else:
-                    page = page + 1
-                    total = total + len(tweets)
+            #rate_limit = twitter.getRateLimitStatus()['remaining_hits']
 
-                    if end_time is None:
-                        end_time = datetime \
-                                         .strptime(tweets[0]['created_at'],
-                                             "%a %b %d %H:%M:%S +0000 %Y")
+        #else:
+        #    from_db = True
+        #    sorted_dict = simplejson.loads(statistic.statistics)
+        #    total = statistic.total
 
+        #user = User.get_by_key_name(twitter_id)
 
-                    last_tweet = tweets[len(tweets) - 1]
-                    start_time = datetime \
-                                   .strptime(last_tweet['created_at'],
-                                         "%a %b %d %H:%M:%S +0000 %Y")
+        #template_values = {
+        #    'user': user,
+        #    'sorted_dict': sorted_dict,
+        #    'total': total,
+        #    'rate_limit': rate_limit,
+        #    'last_check': statistic.updated + timedelta(hours=7),
+        #    'start_time': statistic.start_time + timedelta(hours=7),
+        #    'end_time': statistic.end_time + timedelta(hours=7),
+        #    'from_db': from_db,
+        #}
 
-                for tweet in tweets:
-                    user = tweet['user']['screen_name']
-                    if not stat.has_key(user):
-                        stat[user] = 0
-
-                    stat[user] = stat[user] + 1
-
-            sorted_stat = sorted(stat, key=stat.get)
-            sorted_stat.reverse()
-
-            sorted_dict = []
-            for item in sorted_stat:
-                if stat[item] > 1:
-                    sorted_dict.append(dict(
-                        user = item,
-                        count = stat[item],
-                    ))
+        #path = os.path.join(TEMPLATE, 'timeline.html')
+        #self.response.out.write(template.render(path, template_values))
 
 
-            statistic.start_time = start_time
-            statistic.end_time = end_time 
-            statistic.total = total
-            statistic.statistics = simplejson.dumps(sorted_dict)
-            statistic.put()
-            rate_limit = twitter.getRateLimitStatus()['remaining_hits']
-
-        else:
-            from_db = True
-            sorted_dict = simplejson.loads(statistic.statistics)
-            total = statistic.total
+class FetchApp(webapp.RequestHandler):
+    def get(self, twitter_id = None):
+        if twitter_id is None:
+            return
 
         user = User.get_by_key_name(twitter_id)
 
-        template_values = {
-            'user': user,
-            'sorted_dict': sorted_dict,
-            'total': total,
-            'rate_limit': rate_limit,
-            'last_check': statistic.updated + timedelta(hours=7),
-            'start_time': statistic.start_time + timedelta(hours=7),
-            'end_time': statistic.end_time + timedelta(hours=7),
-            'from_db': from_db,
-        }
+        twitter = Twython(
+            twitter_token = CONSUMER_KEY,
+            twitter_secret = CONSUMER_SECRET,
+            oauth_token = user.oauth_token,
+            oauth_token_secret = user.oauth_token_secret,
+        )
 
-        path = os.path.join(TEMPLATE, 'timeline.html')
-        self.response.out.write(template.render(path, template_values))
+        statistic = UserStatistic.get_by_key_name(twitter_id)
+
+        #if statistic is None:
+        #    statistic = UserStatistic(
+        #                              key_name=twitter_id,
+        #                              twitter_id=long(twitter_id),
+        #                             )
+        #    statistic.put()
+
+        stat = dict()
+        total = 0
+        page = 0
+        start_time = None
+        end_time = None
+        while True:
+            tweets = twitter.getFriendsTimeline(
+                                             count=200,
+                                             include_entities=1,
+                                             page=page,
+                                             #trim_user=1,
+                                            )
+
+            if len(tweets) == 0:
+                break
+            else:
+                page = page + 1
+                total = total + len(tweets)
+
+                if end_time is None:
+                    end_time = datetime \
+                                     .strptime(tweets[0]['created_at'],
+                                         "%a %b %d %H:%M:%S +0000 %Y")
+
+
+                last_tweet = tweets[len(tweets) - 1]
+                start_time = datetime \
+                               .strptime(last_tweet['created_at'],
+                                     "%a %b %d %H:%M:%S +0000 %Y")
+
+            for tweet in tweets:
+                user = tweet['user']['screen_name']
+                if not stat.has_key(user):
+                    stat[user] = 0
+
+                stat[user] = stat[user] + 1
+
+        sorted_stat = sorted(stat, key=stat.get)
+        sorted_stat.reverse()
+
+        sorted_dict = []
+        for item in sorted_stat:
+            if stat[item] > 1:
+                sorted_dict.append(dict(
+                    user = item,
+                    count = stat[item],
+                ))
+
+
+        statistic.start_time = start_time
+        statistic.end_time = end_time 
+        statistic.total = total
+        statistic.statistics = simplejson.dumps(sorted_dict)
+        statistic.put()
 
 
 class UserApp(webapp.RequestHandler):
@@ -221,19 +253,32 @@ class UserApp(webapp.RequestHandler):
         else:
             user = user[0]
 
-        statistic = UserStatistic.get_by_key_name(user.key().name())
-        sorted_dict = simplejson.loads(statistic.statistics)
+        session = get_current_session()
+        authorized_tokens = session.get('authorized_tokens', None)
+        is_user = user.key().name() == authorized_tokens['user_id'] \
+                    if authorized_tokens else False
 
-        template_values = {
-            'user': user,
-            'sorted_dict': sorted_dict,
-            'total': statistic.total,
-            'last_check': statistic.updated + timedelta(hours=7),
-            'start_time': statistic.start_time + timedelta(hours=7),
-            'end_time': statistic.end_time + timedelta(hours=7),
-            'from_db': True,
-            'user_page': True,
-        }
+        statistic = UserStatistic.get_by_key_name(user.key().name())
+        if statistic.statistics:
+            sorted_dict = simplejson.loads(statistic.statistics)
+
+            template_values = {
+                'user': user,
+                'is_user': is_user,
+                'sorted_dict': sorted_dict,
+                'total': statistic.total,
+                'last_check': statistic.updated \
+                                + timedelta(hours=7),
+                'start_time': statistic.start_time \
+                                + timedelta(hours=7),
+                'end_time': statistic.end_time \
+                                          + timedelta(hours=7),
+            }
+        else:
+            template_values = {
+                'user': user,
+                'is_user': is_user,
+            }
 
         path = os.path.join(TEMPLATE, 'timeline.html')
         self.response.out.write(template.render(path, template_values))
@@ -245,6 +290,7 @@ application = webapp.WSGIApplication(
                   ('/connect', ConnectApp),
                   ('/callback', CallbackApp),
                   ('/user', TimelineApp),
+                  (r'/fetch/(.*)', FetchApp),
                   (r'/user/(.*)', UserApp),
                 ],
                 debug=DEBUG

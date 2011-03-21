@@ -14,8 +14,6 @@
                     less than 1 hour ago.</li>
             {% endif %}
         <li>Last check: (GMT+7) {{ last_check }}</li>
-        {% else %}
-        <li>API Calls left: {{ rate_limit }}</li>
         {% endif %}
         <li>Start: {{ start_time }}</li>
         <li>End: {{ end_time }}</li>
