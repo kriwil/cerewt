@@ -123,20 +123,15 @@ class TimelineApp(webapp.RequestHandler):
                                      )
             statistic.put()
 
-        # Newly created
-        stat = dict()
-        total = 0
+        #if statistic.created == statistic.updated \
+        #    or not statistic.statistics \
+        #    or statistic.updated + timedelta(hours=1) < datetime.now():
 
-        if statistic.created == statistic.updated \
-            or not statistic.statistics \
-            or statistic.updated + timedelta(hours=1) < datetime.now():
-
-            task_url = '/fetch/%s' % twitter_id
-            try:
-                taskqueue.add(url=task_url, name=twitter_id)
-            except:
-                pass
-
+        task_url = '/fetch/%s' % twitter_id
+        try:
+            taskqueue.add(url=task_url, name=twitter_id)
+        except:
+            pass
 
         self.redirect('/user/%s' % username)
 
