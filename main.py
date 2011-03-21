@@ -129,7 +129,7 @@ class TimelineApp(webapp.RequestHandler):
 
         task_url = '/fetch/%s' % twitter_id
         try:
-            taskqueue.add(url=task_url, name=twitter_id)
+            taskqueue.add(url=task_url, name=twitter_id, countdown=120)
         except:
             pass
 
