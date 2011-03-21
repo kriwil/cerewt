@@ -9,24 +9,27 @@
     </h2>
     <ul class='user_data'>
         {% if from_db %}
-        <li>Last check: (GMT+7) {{ last_check }}</li>
             {% if not user_page %}
                 <li>Sorry, we're not updating your data. Your last update is
                     less than 1 hour ago.</li>
             {% endif %}
+        <li>Last check: (GMT+7) {{ last_check }}</li>
         {% else %}
         <li>API Calls left: {{ rate_limit }}</li>
         {% endif %}
         <li>Start: {{ start_time }}</li>
         <li>End: {{ end_time }}</li>
+        <li>Total tweets: {{ total }}</li>
     </ul>
-   
+  
+    {% comment %} 
     {% if not from_db %} 
     <p class='stat_meta'>
         From latest <em>{{ total }}</em> tweets in your timeline,
         these are your most chatty friends.
     </p>
     {% endif %}
+    {% endcomment %}
 
     <ul class='stat_data'>
         {% for item in sorted_dict %}

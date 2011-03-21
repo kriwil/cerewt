@@ -180,6 +180,7 @@ class TimelineApp(webapp.RequestHandler):
 
             statistic.start_time = start_time
             statistic.end_time = end_time 
+            statistic.total = total
             statistic.statistics = simplejson.dumps(sorted_dict)
             statistic.put()
             rate_limit = twitter.getRateLimitStatus()['remaining_hits']
@@ -187,6 +188,7 @@ class TimelineApp(webapp.RequestHandler):
         else:
             from_db = True
             sorted_dict = simplejson.loads(statistic.statistics)
+            total = statistic.total
 
         user = User.get_by_key_name(twitter_id)
 
@@ -225,6 +227,7 @@ class UserApp(webapp.RequestHandler):
         template_values = {
             'user': user,
             'sorted_dict': sorted_dict,
+            'total': statistic.total,
             'last_check': statistic.updated + timedelta(hours=7),
             'start_time': statistic.start_time + timedelta(hours=7),
             'end_time': statistic.end_time + timedelta(hours=7),
