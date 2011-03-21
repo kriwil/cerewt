@@ -133,9 +133,7 @@ class TimelineApp(webapp.RequestHandler):
 
             task_url = '/fetch/%s' % twitter_id
             try:
-                taskqueue.add(url=task_url,
-                              name=twitter_id,
-                              method='GET')
+                taskqueue.add(url=task_url, name=twitter_id)
             except:
                 pass
 
@@ -167,7 +165,7 @@ class TimelineApp(webapp.RequestHandler):
 
 
 class FetchApp(webapp.RequestHandler):
-    def get(self, twitter_id = None):
+    def post(self, twitter_id = None):
         if twitter_id is None:
             return
 
