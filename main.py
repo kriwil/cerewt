@@ -93,7 +93,7 @@ class CallbackApp(webapp.RequestHandler):
         path = os.path.join(TEMPLATE, 'base.html')
         self.response.out.write(template.render(path, template_values))
 
-        self.redirect('/timeline')
+        self.redirect('/user')
 
 
 class TimelineApp(webapp.RequestHandler):
@@ -148,14 +148,14 @@ class TimelineApp(webapp.RequestHandler):
                     page = page + 1
                     total = total + len(tweets)
 
-                    if start_time is None:
-                        start_time = datetime \
+                    if end_time is None:
+                        end_time = datetime \
                                          .strptime(tweets[0]['created_at'],
                                              "%a %b %d %H:%M:%S +0000 %Y")
 
 
                     last_tweet = tweets[len(tweets) - 1]
-                    end_time = datetime \
+                    start_time = datetime \
                                    .strptime(last_tweet['created_at'],
                                          "%a %b %d %H:%M:%S +0000 %Y")
 
@@ -196,6 +196,8 @@ class TimelineApp(webapp.RequestHandler):
             'total': total,
             'rate_limit': rate_limit,
             'last_check': statistic.updated + timedelta(hours=7),
+            'start_time': statistic.start_time + timedelta(hours=7),
+            'end_time': statistic.end_time + timedelta(hours=7),
             'from_db': from_db,
         }
 
@@ -205,7 +207,10 @@ class TimelineApp(webapp.RequestHandler):
 
 class UserApp(webapp.RequestHandler):
 
-    def get(self, username):
+    def get(self, username = None):
+        if username is None:
+            self.redirect('/user')
+            return
 
         user = User.gql("WHERE username = :1", username)
         if user.count() == 0:
@@ -221,6 +226,8 @@ class UserApp(webapp.RequestHandler):
             'user': user,
             'sorted_dict': sorted_dict,
             'last_check': statistic.updated + timedelta(hours=7),
+            'start_time': statistic.start_time + timedelta(hours=7),
+            'end_time': statistic.end_time + timedelta(hours=7),
             'from_db': True,
             'user_page': True,
         }
@@ -234,7 +241,7 @@ application = webapp.WSGIApplication(
                   ('/', HomeApp),
                   ('/connect', ConnectApp),
                   ('/callback', CallbackApp),
-                  ('/timeline', TimelineApp),
+                  ('/user', TimelineApp),
                   (r'/user/(.*)', UserApp),
                 ],
                 debug=DEBUG

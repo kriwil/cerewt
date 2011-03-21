@@ -5,7 +5,8 @@
 <div class='content'>
     <h2>Result for
         <a href='http://twitter.com/{{ user.username }}'>
-            @{{ user.username }}</a></h2>
+            @{{ user.username }}</a>
+    </h2>
     <ul class='user_data'>
         {% if from_db %}
         <li>Last check: (GMT+7) {{ last_check }}</li>
@@ -16,6 +17,8 @@
         {% else %}
         <li>API Calls left: {{ rate_limit }}</li>
         {% endif %}
+        <li>Start: {{ start_time }}</li>
+        <li>End: {{ end_time }}</li>
     </ul>
    
     {% if not from_db %} 
