@@ -38,7 +38,6 @@ class ConnectApp(webapp.RequestHandler):
         twitter = Twython(
             twitter_token = CONSUMER_KEY,
             twitter_secret = CONSUMER_SECRET,
-            callback_url = 'http://localhost:8080/callback',
         )
 
         auth_props = twitter.get_authentication_tokens()
