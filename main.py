@@ -113,7 +113,6 @@ class TimelineApp(webapp.RequestHandler):
 
         twitter_id = authorized_tokens['user_id']
         username = authorized_tokens['screen_name']
-        rate_limit = 0
 
         statistic = UserStatistic.get_by_key_name(twitter_id)
         if statistic is None:
@@ -123,15 +122,17 @@ class TimelineApp(webapp.RequestHandler):
                                      )
             statistic.put()
 
-        #if statistic.created == statistic.updated \
-        #    or not statistic.statistics \
-        #    or statistic.updated + timedelta(hours=1) < datetime.now():
+        if statistic.created == statistic.updated \
+            or not statistic.statistics \
+            or statistic.updated + timedelta(hours=1) < datetime.now():
 
-        task_url = '/fetch/%s' % twitter_id
-        try:
-            taskqueue.add(url=task_url, name=twitter_id, countdown=120)
-        except:
-            pass
+            try:
+                taskqueue.add(url='/fetch', 
+                              name=twitter_id,
+                              params={'twitter_id': twitter_id}, 
+                              countdown=120)
+            except:
+                pass
 
         self.redirect('/user/%s' % username)
 
@@ -160,7 +161,8 @@ class TimelineApp(webapp.RequestHandler):
 
 
 class FetchApp(webapp.RequestHandler):
-    def post(self, twitter_id = None):
+    def post(self):
+        twitter_id = self.request.get('twitter_id', None)
         if twitter_id is None:
             return
 
@@ -289,7 +291,7 @@ application = webapp.WSGIApplication(
                   ('/connect', ConnectApp),
                   ('/callback', CallbackApp),
                   ('/user', TimelineApp),
-                  (r'/fetch/(.*)', FetchApp),
+                  (r'/fetch', FetchApp),
                   (r'/user/(.*)', UserApp),
                 ],
                 debug=DEBUG
