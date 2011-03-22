@@ -290,7 +290,7 @@ application = webapp.WSGIApplication(
                   ('/connect', ConnectApp),
                   ('/callback', CallbackApp),
                   ('/user', TimelineApp),
-                  (r'/fetch', FetchApp),
+                  ('/fetch', FetchApp),
                   (r'/user/(.*)', UserApp),
                 ],
                 debug=DEBUG
