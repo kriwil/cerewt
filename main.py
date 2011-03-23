@@ -1,5 +1,6 @@
 # vim: set expandtab
 
+import logging
 from datetime import datetime, timedelta
 
 from google.appengine.api import taskqueue 
@@ -122,9 +123,8 @@ class TimelineApp(webapp.RequestHandler):
                                      )
             statistic.put()
 
-        if statistic.created == statistic.updated \
-            or not statistic.statistics \
-            or statistic.updated + timedelta(hours=1) < datetime.now():
+        if statistic.statistics == None \
+            or (statistic.updated + timedelta(hours=1)) < datetime.now():
 
             try:
                 #taskqueue.add(url='/fetch', 
@@ -234,7 +234,7 @@ class FetchApp(webapp.RequestHandler):
 
         sorted_dict = []
         for item in sorted_stat:
-            if stat[item] > 1:
+            if stat[item] > 4:
                 sorted_dict.append(dict(
                     user = item,
                     count = stat[item],
