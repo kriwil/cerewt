@@ -1,0 +1,4 @@
+queue:
+- name: fetch-tweets
+  rate: 5/s
+

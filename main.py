@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from google.appengine.api import taskqueue 
 from google.appengine.api import users
+from google.appengine.api.taskqueue import Task, Queue
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -126,10 +127,18 @@ class TimelineApp(webapp.RequestHandler):
             or statistic.updated + timedelta(hours=1) < datetime.now():
 
             try:
-                taskqueue.add(url='/fetch', 
-                              name=twitter_id,
-                              params={'twitter_id': twitter_id}, 
-                              countdown=120)
+                #taskqueue.add(url='/fetch', 
+                #              name=twitter_id,
+                #              params={'twitter_id': twitter_id}, 
+                #              countdown=120)
+                task = Task(url='/fetch',
+                         name=twitter_id,
+                         countdown=120,
+                         params={'twitter_id': twitter_id})
+
+                queue = Queue(name='fetch-tweets')
+                queue.add(task)
+
             except:
                 pass
 
