@@ -1,6 +1,7 @@
 # vim: set expandtab
 
 import logging
+import time
 from datetime import datetime, timedelta
 
 from google.appengine.api import taskqueue 
@@ -127,20 +128,20 @@ class TimelineApp(webapp.RequestHandler):
             or (statistic.updated + timedelta(hours=1)) < datetime.now():
 
             try:
-                #taskqueue.add(url='/fetch', 
-                #              name=twitter_id,
-                #              params={'twitter_id': twitter_id}, 
-                #              countdown=120)
-                task = Task(url='/fetch',
-                         name=twitter_id,
-                         countdown=120,
-                         params={'twitter_id': twitter_id})
+                task = Task(
+                            url = '/fetch',
+                            params = {'twitter_id': twitter_id}
+                           )
 
                 queue = Queue(name='fetch-tweets')
                 queue.add(task)
 
+                statistic.updated = datetime.now()
+                statistic.put()
+
             except:
-                pass
+                #pass
+                logging.exception('something bad happened')
 
         self.redirect('/user/%s' % username)
 
