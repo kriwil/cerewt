@@ -70,6 +70,7 @@ class CallbackApp(webapp.RequestHandler):
         )
 
         # terminate all sessions
+        # to make sure the data we about to save in session is new
         session.terminate()
 
         authorized_tokens = twitter.get_authorized_tokens()
@@ -140,33 +141,10 @@ class TimelineApp(webapp.RequestHandler):
                 statistic.put()
 
             except:
-                #pass
+                # need to send to error page if error is happened
                 logging.exception('something bad happened')
 
         self.redirect('/user/%s' % username)
-
-            #rate_limit = twitter.getRateLimitStatus()['remaining_hits']
-
-        #else:
-        #    from_db = True
-        #    sorted_dict = simplejson.loads(statistic.statistics)
-        #    total = statistic.total
-
-        #user = User.get_by_key_name(twitter_id)
-
-        #template_values = {
-        #    'user': user,
-        #    'sorted_dict': sorted_dict,
-        #    'total': total,
-        #    'rate_limit': rate_limit,
-        #    'last_check': statistic.updated + timedelta(hours=7),
-        #    'start_time': statistic.start_time + timedelta(hours=7),
-        #    'end_time': statistic.end_time + timedelta(hours=7),
-        #    'from_db': from_db,
-        #}
-
-        #path = os.path.join(TEMPLATE, 'timeline.html')
-        #self.response.out.write(template.render(path, template_values))
 
 
 class FetchApp(webapp.RequestHandler):
@@ -185,13 +163,6 @@ class FetchApp(webapp.RequestHandler):
         )
 
         statistic = UserStatistic.get_by_key_name(twitter_id)
-
-        #if statistic is None:
-        #    statistic = UserStatistic(
-        #                              key_name=twitter_id,
-        #                              twitter_id=long(twitter_id),
-        #                             )
-        #    statistic.put()
 
         stat = dict()
         total = 0
