@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+
+<div class='content'>
+    {% comment %}
+    <h2>
+    </h2>
+    {% endcomment %}
+
+    <p>
+        {% if updated and not error %}
+            Your tweets is being processed. If nothing goes wrong,
+            you should be able to see
+            <a href='/user/{{ username }}'>the result</a>
+            in couple minutes.
+        {% else %}
+            {% if not updated and not error %}
+                Sorry, I can't update your data since your last check
+                is less than 1 hour ago. Please comeback later.
+            {% else %}
+                Something bad happened. You might want to
+                <a href='/user'>try</a>
+                again. Thank you.
+            {% endif %}
+        {% endif %}
+    </p>
+
+</div>
+
+{% endblock %}

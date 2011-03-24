@@ -140,11 +140,31 @@ class TimelineApp(webapp.RequestHandler):
                 statistic.updated = datetime.now()
                 statistic.put()
 
+                template_values = {
+                    'username': username,
+                    'updated': True,
+                    'error': False,
+                }
+
             except:
                 # need to send to error page if error is happened
                 logging.exception('something bad happened')
 
-        self.redirect('/user/%s' % username)
+                template_values = {
+                    'username': username,
+                    'updated': False,
+                    'error': True,
+                }
+
+        else:
+            template_values = {
+                'username': username,
+                'updated': False,
+                'error': False,
+            }
+
+        path = os.path.join(TEMPLATE, 'message.html')
+        self.response.out.write(template.render(path, template_values))
 
 
 class FetchApp(webapp.RequestHandler):
