@@ -14,8 +14,8 @@ handlers:
   upload: media/img/favicon.ico
 
 - url: /robots\.txt
-  static_files: media/other/robot.txt
-  upload: media/other/robot.txt
+  static_files: media/other/robots.txt
+  upload: media/other/robots.txt
 
 - url: /media
   static_dir: media
