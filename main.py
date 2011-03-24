@@ -205,7 +205,7 @@ class FetchApp(webapp.RequestHandler):
                                                  #page=page,
                                                 )
 
-            if len(tweets) == 0 or total > 1000:
+            if len(tweets) == 0:
                 break
             else:
                 page = page + 1
@@ -230,6 +230,9 @@ class FetchApp(webapp.RequestHandler):
                 stat[user] = stat[user] + 1
 
             max_id = tweets[len(tweets) - 1]['id']
+
+            if total > 1000:
+                break
 
         sorted_stat = sorted(stat, key=stat.get)
         sorted_stat.reverse()
