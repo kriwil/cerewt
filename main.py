@@ -231,7 +231,7 @@ class FetchApp(webapp.RequestHandler):
 
             max_id = tweets[len(tweets) - 1]['id']
 
-            if total > 1000:
+            if total > 800:
                 break
 
         sorted_stat = sorted(stat, key=stat.get)
