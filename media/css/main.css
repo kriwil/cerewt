@@ -1,0 +1,12 @@
+body{background-color:#242424;font-family:'PT Sans',helvetica,arial,sans-serif;font-size:18px;line-height:24px;}
+a{text-decoration:none;}
+em{font-style:italic;}
+.container{background-color:#efefef;color:#242424;margin:0 auto;padding:40px;width:680px;}
+h1{font-size:38px;line-height:48px;margin:0 0 40px 0;text-transform:uppercase;}h1 a{color:#242424;}
+.front{margin:0 0 48px 0;}.front h2{font-size:22px;}
+.front h2,.front p{margin:0 0 12px 0;}
+.content{margin:0 0 48px 0;}.content h2{font-size:22px;margin:0 0 12px 0;}
+.content .user_data{margin:0 0 24px 0;}
+.content .stat_meta{margin:0 0 24px 0;}
+.content .stat_data{margin:0 0 24px 0;}
+.bottom{color:#464646;}.bottom h2{font-size:22px;margin:0 0 12px 0;}

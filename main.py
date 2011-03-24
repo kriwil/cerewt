@@ -26,7 +26,7 @@ class HomeApp(webapp.RequestHandler):
 
     def get(self):
         template_values = {
-            'temp': 'home',
+            'user_count': User.all().count(),
         }
 
         path = os.path.join(TEMPLATE, 'base.html')

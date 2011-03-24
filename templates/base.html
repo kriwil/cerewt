@@ -7,13 +7,33 @@
     the model? arrggh), and only for limited resources (then you have to
     pay for more). So, please don't over-use this please, pretty please ...
     Anyway, enjoy.
+
+    # current statistics
+    total user: {{ user_count }}
 -->
 <title>cerewt</title>
 <link href='/media/css/reset.css' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' 
     type='text/css'>
+<link href='/media/css/main.css' rel='stylesheet' type='text/css'>
+{% comment %}
 <link href='/media/css/main.less' rel='stylesheet/less' type='text/css'>
 <script type='text/javascript' src='/media/js/less-1.0.41.min.js'></script>
+{% endcomment %}
+<script type='text/javascript'>
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-22272974-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
 </head>
 <body>
 <div class='container'>
@@ -27,7 +47,7 @@
     <p><a href='/'><em>Cerewt</em></a>
     (a wordplay for cerewet, Indonesian for <em>chatty</em>) is a simple
     webapp for finding who's the most chatty person in your timeline
-    (in certain period of time &ndash; well, in your at-most-800 latest
+    (in certain period of time &ndash; well, in your 800-to-1000 latest
     home timeline).</p>
     <p>Home timeline is the timeline you see when you log in to twitter,
     tweets from your friends, that is.</p>
@@ -38,6 +58,11 @@
     <p>
         <a href='/connect'><img src='/media/img/sign-in-with-twitter-l.png'></a>
     </p>
+    <p>It has some limitiations. You could only check your statistic
+    every hour. It only fetch 800 to 1000 tweets due to twitter limitations.
+    It'll exponse your followings to the public, so you if don't want to
+    people know who you follow, you shouldn't use this. Other than that,
+    enjoy :)</p>
 </div>
 
 {% endblock %}
