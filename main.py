@@ -279,8 +279,8 @@ class NotifyApp(webapp.RequestHandler):
         twitter = Twython(
             twitter_token = CONSUMER_KEY,
             twitter_secret = CONSUMER_SECRET,
-            oauth_token = KRIWIL_OAUTH_TOKEN,
-            oauth_token_secret = KRIWIL_OAUTH_TOKEN_SECRET,
+            oauth_token = KRWL_OAUTH_TOKEN,
+            oauth_token_secret = KRWL_OAUTH_TOKEN_SECRET,
         )
 
         status = '@%s your page is ready http://cerewt.appspot.com/user/%s' \
