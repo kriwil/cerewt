@@ -237,6 +237,7 @@ class FetchApp(webapp.RequestHandler):
         statistic.end_time = end_time 
         statistic.total = total
         statistic.statistics = simplejson.dumps(sorted_dict)
+        statistic.count += 1
         statistic.put()
 
 

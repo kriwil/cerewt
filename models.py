@@ -27,6 +27,7 @@ class UserStatistic(db.Model):
     private = db.BooleanProperty(default=False)
     total = db.IntegerProperty()
     notify = db.BooleanProperty(default=False)
+    count = db.IntegerProperty(default=0)
 
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)
