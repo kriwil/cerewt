@@ -17,7 +17,10 @@
         {% else %}
             {% if not updated and not error %}
                 Sorry, I can't update your data since your last check
-                is less than 1 hour ago. Please comeback later.
+                is less than 1 hour ago. Please comeback later. You
+                could see your previous
+                <a href='/user/{{ username }}'>statistic</a>
+                though.
             {% else %}
                 Something bad happened. You might want to
                 <a href='/user'>try</a>
