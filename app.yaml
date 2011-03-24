@@ -13,6 +13,10 @@ handlers:
   static_files: media/img/favicon.ico
   upload: media/img/favicon.ico
 
+- url: /robots\.txt
+  static_files: media/other/robot.txt
+  upload: media/other/robot.txt
+
 - url: /media
   static_dir: media
 
