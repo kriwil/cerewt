@@ -174,6 +174,7 @@ class FetchApp(webapp.RequestHandler):
             return
 
         user = User.get_by_key_name(twitter_id)
+        username = user.username
 
         twitter = Twython(
             twitter_token = CONSUMER_KEY,
@@ -187,17 +188,24 @@ class FetchApp(webapp.RequestHandler):
         stat = dict()
         total = 0
         page = 0
+        max_id = None
         start_time = None
         end_time = None
         while True:
-            tweets = twitter.getFriendsTimeline(
-                                             count=200,
-                                             include_entities=1,
-                                             page=page,
-                                             #trim_user=1,
-                                            )
+            if max_id is None:
+                tweets = twitter.getFriendsTimeline(
+                                                 count=200,
+                                                 include_entities=1,
+                                                )
+            else:
+                tweets = twitter.getFriendsTimeline(
+                                                 count=200,
+                                                 include_entities=1,
+                                                 max_id=max_id,
+                                                 #page=page,
+                                                )
 
-            if len(tweets) == 0:
+            if len(tweets) == 0 or total > 1000:
                 break
             else:
                 page = page + 1
@@ -221,6 +229,8 @@ class FetchApp(webapp.RequestHandler):
 
                 stat[user] = stat[user] + 1
 
+            max_id = tweets[len(tweets) - 1]['id']
+
         sorted_stat = sorted(stat, key=stat.get)
         sorted_stat.reverse()
 
@@ -239,6 +249,41 @@ class FetchApp(webapp.RequestHandler):
         statistic.statistics = simplejson.dumps(sorted_dict)
         statistic.count += 1
         statistic.put()
+
+        # notify user
+        try:
+            task = Task(
+                        url = '/notify',
+                        params = {'username': username}
+                       )
+
+            queue = Queue(name='notify-user')
+            queue.add(task)
+
+        except:
+            # need to send to error page if error is happened
+            logging.exception('something bad happened')
+
+
+
+class NotifyApp(webapp.RequestHandler):
+
+    def post(self):
+        username = self.request.get('username', None)
+        if username is None:
+            return
+
+        twitter = Twython(
+            twitter_token = CONSUMER_KEY,
+            twitter_secret = CONSUMER_SECRET,
+            oauth_token = KRIWIL_OAUTH_TOKEN,
+            oauth_token_secret = KRIWIL_OAUTH_TOKEN_SECRET,
+        )
+
+        status = '@%s your page is ready http://cerewt.appspot.com/user/%s' \
+                    % (username, username)
+
+        twitter.updateStatus(status=status)
 
 
 class UserApp(webapp.RequestHandler):
@@ -293,6 +338,7 @@ application = webapp.WSGIApplication(
                   ('/callback', CallbackApp),
                   ('/user', TimelineApp),
                   ('/fetch', FetchApp),
+                  ('/notify', NotifyApp),
                   (r'/user/(.*)', UserApp),
                 ],
                 debug=DEBUG

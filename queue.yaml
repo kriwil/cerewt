@@ -2,3 +2,5 @@ queue:
 - name: fetch-tweets
   rate: 5/s
 
+- name: notify-user
+  rate: 5/s
