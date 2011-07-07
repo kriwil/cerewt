@@ -5,12 +5,17 @@ TEMPLATE = os.path.join(PATH, 'templates')
 ADMIN_TEMPLATE = os.path.join(TEMPLATE, 'admin')
 
 # twitter
-CONSUMER_KEY = 'WmQFg5Wz2Nop5x2ZBjuVAQ'
-CONSUMER_SECRET = 'D9KCTn6Qv4R94F6ZJLXJQjOIDh32EsLAI0Fypa2ZE'
+CONSUMER_KEY = ''
+CONSUMER_SECRET = ''
 
 # kriwil
-KRWL_OAUTH_TOKEN = '70713599-xQ8xrGVbxi6A1gnXBgJMIKEl0q9vNC9WLpXASTfo6'
-KRWL_OAUTH_TOKEN_SECRET = 'q2tdYwy62JDP6qHQhhPHZD7y2Ps9Ty151b21P9S9Q'
+KRWL_OAUTH_TOKEN = ''
+KRWL_OAUTH_TOKEN_SECRET = ''
 
 DEBUG = True
 MAX_TWEETS = 500
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
